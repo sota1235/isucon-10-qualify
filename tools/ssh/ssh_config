@@ -1,0 +1,27 @@
+Host isucon10-qualify.app1
+    User isucon
+    HostName xxx.xxx.xxx.xxx
+    # Githubの秘密鍵にそれぞれ書き換える
+    IdentityFile  ~/.ssh/your_secret-key
+    IdentitiesOnly=yes
+    # LocalでMySQLを利用したい時など.
+    LocalForward 13306 0.0.0.0:3306
+
+Host isucon10-qualify.app2
+    User isucon
+    HostName xxx.xxx.xxx.xxx
+    # Githubの秘密鍵にそれぞれ書き換える
+    IdentityFile  ~/.ssh/your_secret-key
+    IdentitiesOnly=yes
+    # LocalでMySQLを利用したい時など.
+    LocalForward 13306 0.0.0.0:3306
+
+Host isucon10-qualify.app3
+    User isucon
+    HostName xxx.xxx.xxx.xxx
+    # Githubの秘密鍵にそれぞれ書き換える
+    IdentityFile  ~/.ssh/your_secret-key
+    IdentitiesOnly=yes
+    # LocalでMySQLを利用したい時など.
+    LocalForward 13306 0.0.0.0:3306
+
