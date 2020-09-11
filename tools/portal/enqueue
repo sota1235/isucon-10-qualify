@@ -1,0 +1,9 @@
+#!/bin/bash
+
+COOKIE_JAR=.cookiejar
+if [[ ! -f $COOKIE_JAR ]]; then
+  exit 1;
+fi
+
+XSRF_TOKEN=$(grep XSRF-TOKEN "${COOKIE_JAR}" | cut -f 7)
+curl -LSs -X POST -d "XSRF-TOKEN=${XSRF_TOKEN}" -b $COOKIE_JAR $ISUCON_ORIGIN/api/job/enqueue --compressed | jq .

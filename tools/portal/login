@@ -1,0 +1,4 @@
+#!/bin/bash
+
+set -x
+curl -L -c .cookiejar -i $ISUCON_ORIGIN/login --data "XSRF-TOKEN=&id=$ISUCON_ID&password=$ISUCON_PASS" --compressed

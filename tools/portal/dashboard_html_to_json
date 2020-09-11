@@ -1,0 +1,10 @@
+#!/bin/bash
+
+# usage: cat dashboard.html | portal/dashboard_html_to_json
+
+# install: go get github.com/ericchiang/pup
+# install: brew instgall jq
+
+cat - \
+  | pup 'article.tile json{}' \
+  | jq "[.[] | [ (.children[] | { key : .class, value: .text }) ] | from_entries | { key: .subtitle, value: .title}] | from_entries"

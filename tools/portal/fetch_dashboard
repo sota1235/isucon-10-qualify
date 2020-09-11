@@ -1,0 +1,8 @@
+#!/bin/bash
+
+COOKIE_JAR=.cookiejar
+if [[ ! -f $COOKIE_JAR ]]; then
+  exit 1;
+fi
+
+curl -L -b $COOKIE_JAR -i $ISUCON_ORIGIN/dashboard --compressed
