@@ -1,0 +1,14 @@
+#!/bin/bash
+# usage: $ cat key-value json | slack/post "Your message"
+
+set -ex
+SLACK_WEBHOOK=https://hooks.slack.com/services/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
+jq --arg text "${1:-Incomming WebHook}" '{
+    icon_emoji: ":rocket:",
+    text: $text,
+    attachments: [
+      {
+        fields: [ to_entries | .[] | { title: .key, value, short: true } ]
+      }
+    ]
+}' | curl $SLACK_WEBHOOK -d "payload=$(cat -)"
