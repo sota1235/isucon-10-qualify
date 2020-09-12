@@ -3,12 +3,17 @@ ISUCON_ORIGIN=https://portal.isucon.net
 .PHONY: build deploy benchmark show-log
 
 build: ## build app
-	# make -C webapp/go
+	make -C webapp/
+	#
 
-deploy: ## deploy
+deploy: build
 	# rsync . -av isucon@isucon9-qualify.app1:/home/isucon/isucari/webapp/
 	# ssh isucon9-qualify.app1 "sudo systemctl restart isucari.golang.service mysql.service nginx.service"
 	# ssh isucon9-qualify.app1 "sudo systemctl status isucari.golang.service mysql.service nginx.service"
+	rsync -av ./webapp/isuumo isucon10-qualify.app1:/home/isucon/isuumo/webapp/ 
+	# rsync -av ./webapp/isuumo isucon10-qualify.app2:/home/isucon/isuumo/webapp/ 
+	# rsync -av ./webapp/isuumo isucon10-qualify.app3:/home/isucon/isuumo/webapp/ 
+	ssh isucon10-qualify.app1 "sudo systemctl restart isuumo.go.service"
 	tools/newrelic/deploy.sh
 
 benchmark: ## enqueue
