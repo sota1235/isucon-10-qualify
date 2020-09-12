@@ -10,9 +10,16 @@ deploy: build
 	## WebApp Deployment
 	# rsync . -av isucon@isucon9-qualify.app1:/home/isucon/isucari/webapp/
 	rsync -av ./isuumo/webapp/go/isuumo isucon10-qualify.app1:/home/isucon/isuumo/webapp/ 
-	# rsync -av ./webapp/isuumo isucon10-qualify.app2:/home/isucon/isuumo/webapp/ 
-	# rsync -av ./webapp/isuumo isucon10-qualify.app3:/home/isucon/isuumo/webapp/ 
+	## MySQL
+	rsync -av ./etc isucon10-qualify.app1:/home/isucon/ && ssh isucon10-qualify.app1 "sudo cp -v /home/isucon/etc/mysql/mysql.conf.d/mysqld.cnf /etc/mysql/mysql.conf.d/mysqld.cnf"
+
 	ssh isucon10-qualify.app1 "sudo systemctl restart isuumo.go.service mysql.service nginx.service"
+
+	# rsync -av ./isuumo/webapp/go/isuumo isucon10-qualify.app2:/home/isucon/isuumo/webapp/ 
+	# ssh isucon10-qualify.app2 "sudo systemctl restart isuumo.go.service mysql.service nginx.service"
+	#
+	# rsync -av ./isuumo/webapp/go/isuumo isucon10-qualify.app3:/home/isucon/isuumo/webapp/ 
+	# ssh isucon10-qualify.app3 "sudo systemctl restart isuumo.go.service mysql.service nginx.service"
 	tools/newrelic/deploy.sh
 
 benchmark: ## enqueue
@@ -20,9 +27,9 @@ benchmark: ## enqueue
 	# ./tools/slack/post
 
 show-log: ## show log
-	# ssh isucon10-qualify.app1 "sudo tail -f /var/log/syslog"
+	ssh isucon10-qualify.app1 "sudo tail -f /var/log/syslog"
 	# ssh isucon10-qualify.app2 "sudo tail -f /var/log/syslog"
-	ssh isucon10-qualify.app3 "sudo tail -f /var/log/syslog"
+	# ssh isucon10-qualify.app3 "sudo tail -f /var/log/syslog"
 
 .PHONY: help
 help: ## Print this help
