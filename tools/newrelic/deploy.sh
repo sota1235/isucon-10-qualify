@@ -1,6 +1,6 @@
 #!/bin/zsh
 
-set -ex
+set -e
 
 TMP1=/tmp/lhs_$$
 git log HEAD \
