@@ -1,6 +1,9 @@
 package main
 
 import (
+	"net/http"
+	"os"
+
 	"github.com/newrelic/go-agent/v3/integrations/logcontext/nrlogrusplugin"
 	_ "github.com/newrelic/go-agent/v3/integrations/nrmysql"
 	"github.com/newrelic/go-agent/v3/newrelic"
@@ -18,7 +21,7 @@ func main() {
 
 	// Newrelic
 	app, err := newrelic.NewApplication(
-		newrelic.ConfigAppName("isucon9-tutorial-by-tkngue"),
+		newrelic.ConfigAppName("isucon10-qualify"),
 		newrelic.ConfigLicense("abc5b0a386e4eb1ae3244ca1865ecf5de545NRAL"),
 		newrelic.ConfigDistributedTracerEnabled(true),
 		func(c *newrelic.Config) {
