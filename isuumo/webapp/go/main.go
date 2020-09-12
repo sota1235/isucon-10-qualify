@@ -531,12 +531,12 @@ func searchChairs(c echo.Context) error {
 		return c.NoContent(http.StatusBadRequest)
 	}
 
-	searchQuery := "SELECT * FROM chair WHERE "
-	countQuery := "SELECT COUNT(*) FROM chair WHERE "
+	searchQuery := "SELECT id, name, description, thumbnail, price, height, width, depth, color, features, kind FROM chair WHERE "
+	countQuery := "SELECT COUNT(1) FROM chair WHERE "
 
 	if searchByFeature {
-		searchQuery = "SELECT id, name, description, thumbnail, price, height, width, depth, color, features, kind, popularity, stock FROM chair INNER JOIN chair_features USING (id) WHERE "
-		countQuery = "SELECT COUNT(*) FROM chair INNER JOIN chair_features USING (id) WHERE "
+		searchQuery = "SELECT id, name, description, thumbnail, price, height, width, depth, color, features, kind FROM chair INNER JOIN chair_features USING (id) WHERE "
+		countQuery = "SELECT COUNT(1) FROM chair INNER JOIN chair_features USING (id) WHERE "
 	}
 
 	searchCondition := strings.Join(conditions, " AND ")
@@ -816,12 +816,12 @@ func searchEstates(c echo.Context) error {
 		return c.NoContent(http.StatusBadRequest)
 	}
 
-	searchQuery := "SELECT * FROM estate WHERE "
-	countQuery := "SELECT COUNT(*) FROM estate WHERE "
+	searchQuery := "SELECT id, thumbnail, name, description, latitude, longitude, address, rent, door_height, door_width, features FROM estate WHERE "
+	countQuery := "SELECT COUNT(1) FROM estate WHERE "
 
 	if searchByFeature {
-		searchQuery = "SELECT id, thumbnail, name, description, latitude, longitude, address, rent, door_height, door_width, features, popularity FROM estate INNER JOIN estate_features USING (id) WHERE "
-		countQuery = "SELECT COUNT(*) FROM estate INNER JOIN estate_features USING (id) WHERE "
+		searchQuery = "SELECT id, thumbnail, name, description, latitude, longitude, address, rent, door_height, door_width, features FROM estate INNER JOIN estate_features USING (id) WHERE "
+		countQuery = "SELECT COUNT(1) FROM estate INNER JOIN estate_features USING (id) WHERE "
 	}
 
 	searchCondition := strings.Join(conditions, " AND ")
