@@ -1,8 +1,7 @@
-FROM golang:1.10
+FROM golang:1.14
 
-RUN apt update -y && apt install -y git ssh && \
-    GOPATH=/home/isucon/isucon/webapp/go
+RUN apt update -y && apt install -y git ssh
 
-EXPOSE 8000
+EXPOSE 1323
 
 ENTRYPOINT ["/bin/bash"]

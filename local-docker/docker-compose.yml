@@ -24,15 +24,16 @@ services:
     networks:
       - backend
     ports:
-      - "8000"
+      - "1323"
     volumes:
-      - document_root:/home/isucon/isucon/webapp
+      - document_root:/home/isucon/isuumo/webapp
     environment:
-      MYSQL_DBNAME: isucon
+      MYSQL_DBNAME: isuumo
       MYSQL_HOST: db
       MYSQL_PORT: 3306
       MYSQL_USER: isucon
       MYSQL_PASS: isucon
+      GOPATH: /home/isucon/isuumo/webapp/go/
 
   db:
     build:
@@ -42,13 +43,12 @@ services:
       - backend
     ports:
       - "3306"
-    command: ["--character-set-server=utf8mb4"]
+    command: ["--character-set-server=utf8mb4,--sql_mode=NO_ENGINE_SUBSTITUTION"]
     environment:
       MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
-      MYSQL_DATABASE: isucon
+      MYSQL_DATABASE: isuumo
       MYSQL_USER: isucon
       MYSQL_PASSWORD: isucon
-      GOPATH: /home/isucon/isucon/webapp/go/
 
 networks:
   frontend:
@@ -58,5 +58,5 @@ volumes:
   document_root:
     driver_opts:
       type: none
-      device: /YOUR_webapp_dir
+      device: /home/jp_taku/work/isucon-10-qualify/isuumo/webapp
       o: bind
