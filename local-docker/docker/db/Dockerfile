@@ -7,6 +7,7 @@ RUN apt update -y && apt install -y git ssh && \
     ssh-keyscan github.com >> /root/.ssh/known_hosts
 
 ADD sql/* /docker-entrypoint-initdb.d/
+ADD mysql/* /etc/mysql/
 
 EXPOSE 3306
 
