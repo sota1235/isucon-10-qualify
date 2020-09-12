@@ -18,15 +18,17 @@ import (
 	"github.com/labstack/echo"
 	"github.com/labstack/echo/middleware"
 	"github.com/labstack/gommon/log"
-	nrecho "github.com/newrelic/go-agent/v3/integrations/nrecho-v3"
+	"github.com/newrelic/go-agent/v3/integrations/logcontext/nrlogrusplugin"
+	"github.com/newrelic/go-agent/v3/integrations/nrecho-v3"
 	_ "github.com/newrelic/go-agent/v3/integrations/nrmysql"
-	newrelic "github.com/newrelic/go-agent/v3/newrelic"
-	// logAPI "github.com/sirupsen/logrus"
+	"github.com/newrelic/go-agent/v3/newrelic"
+	logAPI "github.com/sirupsen/logrus"
 )
 
 const Limit = 20
 const NazotteLimit = 50
 
+var nlog = logAPI.New()
 var db *sqlx.DB
 var mySQLConnectionData *MySQLConnectionEnv
 var chairSearchCondition ChairSearchCondition
@@ -243,8 +245,7 @@ func init() {
 }
 
 func main() {
-
-	// Newrelic
+	// ############ Newrelic
 	app, _ := newrelic.NewApplication(
 		newrelic.ConfigAppName("isucon10-qualify"),
 		newrelic.ConfigLicense("abc5b0a386e4eb1ae3244ca1865ecf5de545NRAL"),
@@ -384,6 +385,9 @@ func postChair(c echo.Context) error {
 		return c.NoContent(http.StatusInternalServerError)
 	}
 	defer tx.Rollback()
+
+	values := []string{}
+	features_values := []string{}
 	for _, row := range records {
 		rm := RecordMapper{Record: row}
 		id := rm.NextInt()
@@ -403,12 +407,40 @@ func postChair(c echo.Context) error {
 			c.Logger().Errorf("failed to read record: %v", err)
 			return c.NoContent(http.StatusBadRequest)
 		}
-		_, err := tx.ExecContext(ctx, "INSERT INTO chair(id, name, description, thumbnail, price, height, width, depth, color, features, kind, popularity, stock) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)", id, name, description, thumbnail, price, height, width, depth, color, features, kind, popularity, stock)
-		if err != nil {
-			c.Logger().Errorf("failed to insert chair: %v", err)
-			return c.NoContent(http.StatusInternalServerError)
+
+		v := fmt.Sprintf(
+			`(%d,"%s","%s","%s",%d,%d,%d,%d,"%s","%s","%s","%s","%s")`,
+			id, name, description, thumbnail, price, height, width, depth, color, features, kind, popularity, stock,
+		)
+		values = append(values, v)
+
+		for _, f := range strings.Split(features, ",") {
+			if f != "" {
+				features_values = append(features_values, fmt.Sprintf("(%d, %s)", id, f))
+			}
 		}
 	}
+
+	query := fmt.Sprintf(`
+	INSERT INTO chair(id, name, description, thumbnail, price, height, width, depth, color, features, kind, popularity, stock) 
+	VALUES %s`, strings.Join(values, ",\n\t\t"))
+	tx.ExecContext(ctx, query)
+	if err != nil {
+		c.Logger().Errorf("failed to insert chair: %v", err)
+		return c.NoContent(http.StatusInternalServerError)
+	}
+
+	// Feature Insertion
+	query2 := fmt.Sprintf(`
+	INSERT INTO chair_features(id, feature_name) 
+	VALUES %s`, strings.Join(features_values, ",\n\t\t"))
+
+	_, err = tx.ExecContext(ctx, query2)
+	if err != nil {
+		c.Logger().Errorf("failed to insert chair_features: %v", err)
+		return c.NoContent(http.StatusInternalServerError)
+	}
+
 	if err := tx.Commit(); err != nil {
 		c.Logger().Errorf("failed to commit tx: %v", err)
 		return c.NoContent(http.StatusInternalServerError)
