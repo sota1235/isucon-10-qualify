@@ -18,7 +18,6 @@ import (
 	"github.com/labstack/echo"
 	"github.com/labstack/echo/middleware"
 	"github.com/labstack/gommon/log"
-	"github.com/newrelic/go-agent/v3/integrations/logcontext/nrlogrusplugin"
 	"github.com/newrelic/go-agent/v3/integrations/nrecho-v3"
 	_ "github.com/newrelic/go-agent/v3/integrations/nrmysql"
 	"github.com/newrelic/go-agent/v3/newrelic"
@@ -747,7 +746,7 @@ func postEstate(c echo.Context) error {
 		v := fmt.Sprintf(
 			// FIXME(takeno): 浮動小数点の数？
 			`(%d,"%s","%s","%s","%s",%f,%f,%d,%d,%d,"%s","%s",%d)`,
-			id, name, description, thumbnail, address, latitude, longitude, rent, door_height, door_width, features, popularity,
+			id, name, description, thumbnail, address, latitude, longitude, rent, doorHeight, doorWidth, features, popularity,
 		)
 		values = append(values, v)
 
