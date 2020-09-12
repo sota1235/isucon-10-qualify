@@ -1,4 +1,4 @@
 all: isuumo
 
 isuumo: *.go
-	go build -o isuumo
+	GOOS=linux GOARCH=amd64 go build -o isuumo

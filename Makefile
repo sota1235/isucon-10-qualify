@@ -9,16 +9,16 @@ build: ## build app
 deploy: build
 	## WebApp Deployment
 	# rsync . -av isucon@isucon9-qualify.app1:/home/isucon/isucari/webapp/
-	rsync -av ./isuumo/webapp/go/isuumo isucon10-qualify.app1:/home/isucon/isuumo/webapp/ 
+	rsync -av ./isuumo/webapp/go/isuumo isucon10-qualify.app1:/home/isucon/isuumo/webapp/go
 	## MySQL
 	rsync -av ./etc isucon10-qualify.app1:/home/isucon/
 
 	ssh isucon10-qualify.app1 "sudo systemctl restart isuumo.go.service nginx.service"
 
-	# rsync -av ./isuumo/webapp/go/isuumo isucon10-qualify.app2:/home/isucon/isuumo/webapp/ 
+	# rsync -av ./isuumo/webapp/go/isuumo isucon10-qualify.app2:/home/isucon/isuumo/webapp/
 	# ssh isucon10-qualify.app2 "sudo systemctl restart isuumo.go.service mysql.service nginx.service"
 	#
-	# rsync -av ./isuumo/webapp/go/isuumo isucon10-qualify.app3:/home/isucon/isuumo/webapp/ 
+	# rsync -av ./isuumo/webapp/go/isuumo isucon10-qualify.app3:/home/isucon/isuumo/webapp/
 	# ssh isucon10-qualify.app3 "sudo systemctl restart isuumo.go.service mysql.service nginx.service"
 	tools/newrelic/deploy.sh
 
