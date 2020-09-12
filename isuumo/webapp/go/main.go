@@ -18,6 +18,10 @@ import (
 	"github.com/labstack/echo"
 	"github.com/labstack/echo/middleware"
 	"github.com/labstack/gommon/log"
+	nrecho "github.com/newrelic/go-agent/v3/integrations/nrecho-v3"
+	_ "github.com/newrelic/go-agent/v3/integrations/nrmysql"
+	newrelic "github.com/newrelic/go-agent/v3/newrelic"
+	// logAPI "github.com/sirupsen/logrus"
 )
 
 const Limit = 20
@@ -239,6 +243,18 @@ func init() {
 }
 
 func main() {
+
+	// Newrelic
+	app, _ := newrelic.NewApplication(
+		newrelic.ConfigAppName("isucon10-qualify"),
+		newrelic.ConfigLicense("abc5b0a386e4eb1ae3244ca1865ecf5de545NRAL"),
+		newrelic.ConfigDistributedTracerEnabled(true),
+		func(c *newrelic.Config) {
+			c.TransactionEvents.Enabled = true
+			c.DatastoreTracer.SlowQuery.Enabled = true
+		},
+	)
+
 	// Echo instance
 	e := echo.New()
 	e.Debug = true
@@ -247,6 +263,9 @@ func main() {
 	// Middleware
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
+
+	// Add the nrecho middleware before other middlewares or routes:
+	e.Use(nrecho.Middleware(app))
 
 	// Initialize
 	e.POST("/initialize", initialize)
