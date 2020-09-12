@@ -451,6 +451,8 @@ func searchChairs(c echo.Context) error {
 	ctx := c.Request().Context()
 	conditions := make([]string, 0)
 	params := make([]interface{}, 0)
+	paramsForSearch := make([]interface{}, 0)
+	paramsForCount := make([]interface{}, 0)
 
 	if c.QueryParam("priceRangeId") != "" {
 		chairPrice, err := getRange(chairSearchCondition.Price, c.QueryParam("priceRangeId"))
@@ -530,18 +532,27 @@ func searchChairs(c echo.Context) error {
 		params = append(params, c.QueryParam("color"))
 	}
 
+	paramsForSearch = append(paramsForSearch, params...)
+	paramsForCount = append(paramsForCount, params...)
+
+	searchByFeature := false
+	featuresCond := ""
 	if c.QueryParam("features") != "" {
+		searchByFeature = true
+		featuresParam := make([]interface{}, 0)
 		features := strings.Split(c.QueryParam("features"), ",")
 		template := strings.Repeat("?", len(features))
-		cond := strings.Join(strings.Split(template, ""), ", ")
-		conditions = append(conditions, cond)
+		featuresCond = "feature_name IN (" + strings.Join(strings.Split(template, ""), ", ") + ")"
+
 
 		for _, f := range features {
-			params = append(params, f)
+			featuresParam = append(featuresParam, f)
 		}
+		paramsForSearch = append(featuresParam, paramsForSearch...)
+		paramsForCount = append(paramsForCount, featuresParam...)
 	}
 
-	if len(conditions) == 0 {
+	if len(conditions) == 0 && !searchByFeature {
 		c.Echo().Logger.Infof("Search condition not found")
 		return c.NoContent(http.StatusBadRequest)
 	}
@@ -560,21 +571,47 @@ func searchChairs(c echo.Context) error {
 		return c.NoContent(http.StatusBadRequest)
 	}
 
-	searchQuery := "SELECT * FROM chair WHERE "
-	countQuery := "SELECT COUNT(*) FROM chair WHERE "
+	searchQuery := "SELECT id, name, description, thumbnail, price, height, width, depth, color, features, kind FROM chair WHERE "
+	countQuery := "SELECT COUNT(1) FROM chair WHERE "
+
+	if searchByFeature {
+		searchQuery = fmt.Sprintf(`
+SELECT 
+	id, name, description, thumbnail, price, height, width, depth, color, features, kind 
+FROM chair 
+	INNER JOIN (
+		SELECT id
+		FROM chair_features
+		WHERE %s
+		GROUP BY id
+	) as chair_feature_ids
+		USING (id) 
+WHERE `, featuresCond)
+		countQuery = "SELECT COUNT(DISTINCT(1)) FROM chair INNER JOIN chair_features USING (id) WHERE "
+	}
+
+	// Condition
 	searchCondition := strings.Join(conditions, " AND ")
+	conditionsForCount := conditions
+	if searchByFeature {
+		conditionsForCount = append(conditions, featuresCond)
+	}
+	countCondition := strings.Join(conditionsForCount, " AND ")
+
 	limitOffset := " ORDER BY popularity DESC, id ASC LIMIT ? OFFSET ?"
 
 	var res ChairSearchResponse
-	err = db.GetContext(ctx, &res.Count, countQuery+searchCondition, params...)
+	err = db.GetContext(ctx, &res.Count, countQuery+countCondition, paramsForCount...)
+	fmt.Print(countQuery+countCondition)
+	fmt.Print(paramsForCount)
 	if err != nil {
 		c.Logger().Errorf("searchChairs DB execution error : %v", err)
 		return c.NoContent(http.StatusInternalServerError)
 	}
 
 	chairs := []Chair{}
-	params = append(params, perPage, page*perPage)
-	err = db.Select(&chairs, searchQuery+searchCondition+limitOffset, params...)
+	paramsForSearch = append(paramsForSearch, perPage, page*perPage)
+	err = db.Select(&chairs, searchQuery+searchCondition+limitOffset, paramsForSearch...)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return c.JSON(http.StatusOK, ChairSearchResponse{Count: 0, Chairs: []Chair{}})
@@ -788,6 +825,8 @@ func searchEstates(c echo.Context) error {
 	ctx := c.Request().Context()
 	conditions := make([]string, 0)
 	params := make([]interface{}, 0)
+	paramsForSearch := make([]interface{}, 0)
+	paramsForCount := make([]interface{}, 0)
 
 	if c.QueryParam("doorHeightRangeId") != "" {
 		doorHeight, err := getRange(estateSearchCondition.DoorHeight, c.QueryParam("doorHeightRangeId"))
@@ -840,18 +879,26 @@ func searchEstates(c echo.Context) error {
 		}
 	}
 
+	paramsForSearch = append(paramsForSearch, params...)
+	paramsForCount = append(paramsForCount, params...)
+
+	searchByFeature := false
+	featuresCond := ""
 	if c.QueryParam("features") != "" {
+		searchByFeature = true
+		featuresParam := make([]interface{}, 0)
 		features := strings.Split(c.QueryParam("features"), ",")
 		template := strings.Repeat("?", len(features))
-		cond := strings.Join(strings.Split(template, ""), ", ")
+		featuresCond = "feature_name IN (" + strings.Join(strings.Split(template, ""), ", ")  + ")"
 
-		conditions = append(conditions, cond)
 		for _, f := range features {
-			params = append(params, f)
+			featuresParam = append(featuresParam, f)
 		}
+		paramsForSearch = append(featuresParam, paramsForSearch...)
+		paramsForCount = append(paramsForCount, featuresParam...)
 	}
 
-	if len(conditions) == 0 {
+	if len(conditions) == 0 && !searchByFeature {
 		c.Echo().Logger.Infof("searchEstates search condition not found")
 		return c.NoContent(http.StatusBadRequest)
 	}
@@ -868,21 +915,44 @@ func searchEstates(c echo.Context) error {
 		return c.NoContent(http.StatusBadRequest)
 	}
 
-	searchQuery := "SELECT * FROM estate WHERE "
-	countQuery := "SELECT COUNT(*) FROM estate WHERE "
+	searchQuery := "SELECT id, thumbnail, name, description, latitude, longitude, address, rent, door_height, door_width, features FROM estate WHERE "
+	countQuery := "SELECT COUNT(1) FROM estate WHERE "
+
+	if searchByFeature {
+		searchQuery = fmt.Sprintf(`
+SELECT 
+	id, thumbnail, name, description, latitude, longitude, address, rent, door_height, door_width, features 
+FROM estate 
+	INNER JOIN (
+		SELECT id
+		FROM estate_features 
+		WHERE %s
+		GROUP BY id
+	) as estate_feature_ids 
+		USING (id)`, featuresCond)
+		countQuery = "SELECT COUNT(DISTINCT(1)) FROM estate INNER JOIN estate_features USING (id) WHERE "
+	}
+
+	// Condition
 	searchCondition := strings.Join(conditions, " AND ")
+	conditionsForCount := conditions
+	if searchByFeature {
+		conditionsForCount = append(conditions, featuresCond)
+	}
+	countCondition := strings.Join(conditionsForCount, " AND ")
+
 	limitOffset := " ORDER BY popularity DESC, id ASC LIMIT ? OFFSET ?"
 
 	var res EstateSearchResponse
-	err = db.GetContext(ctx, &res.Count, countQuery+searchCondition, params...)
+	err = db.GetContext(ctx, &res.Count, countQuery+countCondition, paramsForCount...)
 	if err != nil {
 		c.Logger().Errorf("searchEstates DB execution error : %v", err)
 		return c.NoContent(http.StatusInternalServerError)
 	}
 
 	estates := []Estate{}
-	params = append(params, perPage, page*perPage)
-	err = db.Select(&estates, searchQuery+searchCondition+limitOffset, params...)
+	paramsForSearch = append(paramsForSearch, perPage, page*perPage)
+	err = db.Select(&estates, searchQuery+searchCondition+limitOffset, paramsForSearch...)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return c.JSON(http.StatusOK, EstateSearchResponse{Count: 0, Estates: []Estate{}})
