@@ -206,9 +206,9 @@ func NewMySQLConnectionEnv() *MySQLConnectionEnv {
 	return &MySQLConnectionEnv{
 		Host:     getEnv("MYSQL_HOST", "127.0.0.1"),
 		Port:     getEnv("MYSQL_PORT", "3306"),
-		User:     getEnv("MYSQL_USER", "isucon"),
+		User:     getEnv("MYSQL_USER", "root"),
 		DBName:   getEnv("MYSQL_DBNAME", "isuumo"),
-		Password: getEnv("MYSQL_PASS", "isucon"),
+		Password: getEnv("MYSQL_PASS", ""),
 	}
 }
 
@@ -499,10 +499,12 @@ func searchChairs(c echo.Context) error {
 		params = append(params, c.QueryParam("color"))
 	}
 
+	searchByFeature := false
 	if c.QueryParam("features") != "" {
+		searchByFeature = true
 		features := strings.Split(c.QueryParam("features"), ",")
 		template := strings.Repeat("?", len(features))
-		cond := strings.Join(strings.Split(template, ""), ", ")
+		cond := "feature_name IN (" + strings.Join(strings.Split(template, ""), ", ") + ")"
 		conditions = append(conditions, cond)
 
 		for _, f := range features {
@@ -531,6 +533,12 @@ func searchChairs(c echo.Context) error {
 
 	searchQuery := "SELECT * FROM chair WHERE "
 	countQuery := "SELECT COUNT(*) FROM chair WHERE "
+
+	if searchByFeature {
+		searchQuery = "SELECT id, name, description, thumbnail, price, height, width, depth, color, features, kind, popularity, stock FROM chair INNER JOIN chair_features USING (id) WHERE "
+		countQuery = "SELECT COUNT(*) FROM chair INNER JOIN chair_features USING (id) WHERE "
+	}
+
 	searchCondition := strings.Join(conditions, " AND ")
 	limitOffset := " ORDER BY popularity DESC, id ASC LIMIT ? OFFSET ?"
 
@@ -544,6 +552,7 @@ func searchChairs(c echo.Context) error {
 	chairs := []Chair{}
 	params = append(params, perPage, page*perPage)
 	err = db.Select(&chairs, searchQuery+searchCondition+limitOffset, params...)
+	fmt.Print(searchQuery+searchCondition+limitOffset)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return c.JSON(http.StatusOK, ChairSearchResponse{Count: 0, Chairs: []Chair{}})
@@ -777,10 +786,12 @@ func searchEstates(c echo.Context) error {
 		}
 	}
 
+	searchByFeature := false
 	if c.QueryParam("features") != "" {
+		searchByFeature = true
 		features := strings.Split(c.QueryParam("features"), ",")
 		template := strings.Repeat("?", len(features))
-		cond := strings.Join(strings.Split(template, ""), ", ")
+		cond := "feature_name IN (" + strings.Join(strings.Split(template, ""), ", ")  + ")"
 
 		conditions = append(conditions, cond)
 		for _, f := range features {
@@ -807,6 +818,12 @@ func searchEstates(c echo.Context) error {
 
 	searchQuery := "SELECT * FROM estate WHERE "
 	countQuery := "SELECT COUNT(*) FROM estate WHERE "
+
+	if searchByFeature {
+		searchQuery = "SELECT id, thumbnail, name, description, latitude, longitude, address, rent, door_height, door_width, features, popularity FROM estate INNER JOIN estate_features USING (id) WHERE "
+		countQuery = "SELECT COUNT(*) FROM estate INNER JOIN estate_features USING (id) WHERE "
+	}
+
 	searchCondition := strings.Join(conditions, " AND ")
 	limitOffset := " ORDER BY popularity DESC, id ASC LIMIT ? OFFSET ?"
 
