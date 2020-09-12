@@ -1,27 +1,41 @@
+
+Host isucon-bastion
+   HostName <指示された踏み台サーバ>
+   User <指示されたユーザー名>
+
+Host isucon10-qualify.*
+  ProxyJump isucon-bastion
+  IdentityFile  ~/.ssh/your_secret-key
+  IdentitiesOnly=yes
+  ControlMaster auto
+  ControlPath ~/.ssh/cm_socket/%C
+
+# Host isucon-server
+#    ProxyJump isucon-bastion
+#    HostName <指示されたインスタンスのアドレス>
+#    LocalForward localhost:10443 localhost:443
+
 Host isucon10-qualify.app1
     User isucon
     HostName xxx.xxx.xxx.xxx
     # Githubの秘密鍵にそれぞれ書き換える
-    IdentityFile  ~/.ssh/your_secret-key
-    IdentitiesOnly=yes
     # LocalでMySQLを利用したい時など.
     LocalForward 13306 0.0.0.0:3306
+    ProxyJump isucon-bastion
 
 Host isucon10-qualify.app2
     User isucon
     HostName xxx.xxx.xxx.xxx
     # Githubの秘密鍵にそれぞれ書き換える
-    IdentityFile  ~/.ssh/your_secret-key
-    IdentitiesOnly=yes
     # LocalでMySQLを利用したい時など.
     LocalForward 13306 0.0.0.0:3306
-
+    ProxyJump isucon-bastion
+ 
 Host isucon10-qualify.app3
     User isucon
     HostName xxx.xxx.xxx.xxx
     # Githubの秘密鍵にそれぞれ書き換える
-    IdentityFile  ~/.ssh/your_secret-key
-    IdentitiesOnly=yes
     # LocalでMySQLを利用したい時など.
     LocalForward 13306 0.0.0.0:3306
-
+    ProxyJump isucon-bastion
+ 
