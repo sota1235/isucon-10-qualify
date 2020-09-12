@@ -1,6 +1,7 @@
 #!/bin/bash
 
 COOKIE_JAR=.cookiejar
+ISUCON_ORIGIN=https://portal.isucon.net
 if [[ ! -f $COOKIE_JAR ]]; then
   exit 1;
 fi
