@@ -23,6 +23,16 @@ CREATE TABLE isuumo.estate
     INDEX door_height_width (door_height, door_width)
 );
 
+CREATE TABLE isuumo.estate_features
+(
+    id           INTEGER NOT NULL,
+    feature_name VARCHAR(64),
+    INDEX feature_name_index(feature_name),
+    /* INDEX "order_rent" ("rent"), */
+    INDEX `idx_door` (`door_height`, `door_width`) USING BTREE
+);
+
+
 CREATE TABLE isuumo.chair
 (
     id          INTEGER         NOT NULL PRIMARY KEY,
