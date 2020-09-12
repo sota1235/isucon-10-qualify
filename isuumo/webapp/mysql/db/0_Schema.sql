@@ -17,7 +17,9 @@ CREATE TABLE isuumo.estate
     door_height INTEGER             NOT NULL,
     door_width  INTEGER             NOT NULL,
     features    VARCHAR(64)         NOT NULL,
-    popularity  INTEGER             NOT NULL
+    popularity  INTEGER             NOT NULL,
+    /* INDEX "order_rent" ("rent"), */
+    INDEX `idx_door` (`door_height`, `door_width`) USING BTREE
 );
 
 CREATE TABLE isuumo.estate_features
