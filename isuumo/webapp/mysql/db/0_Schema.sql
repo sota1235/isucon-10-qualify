@@ -20,6 +20,13 @@ CREATE TABLE isuumo.estate
     popularity  INTEGER             NOT NULL
 );
 
+CREATE TABLE isuumo.estate_features
+(
+    id           INTEGER NOT NULL,
+    feature_name VARCHAR(64),
+    INDEX feature_name_index(feature_name)
+);
+
 CREATE TABLE isuumo.chair
 (
     id          INTEGER         NOT NULL PRIMARY KEY,
@@ -35,4 +42,11 @@ CREATE TABLE isuumo.chair
     kind        VARCHAR(64)     NOT NULL,
     popularity  INTEGER         NOT NULL,
     stock       INTEGER         NOT NULL
+);
+
+CREATE TABLE isuumo.chair_features
+(
+    id           INTEGER NOT NULL,
+    feature_name VARCHAR(64),
+    INDEX feature_name_index(feature_name)
 );
