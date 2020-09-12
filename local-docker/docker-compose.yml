@@ -1,0 +1,62 @@
+version: '3'
+services:
+  web:
+    build:
+      context: ./docker/web
+    image: isucon-web
+    depends_on:
+      - app
+    networks:
+      - frontend
+      - backend
+    ports:
+      - "80:80"
+    volumes:
+      - ./docker/web/isucon.conf /etc/nginx/sites-available/isucon.conf
+
+  app:
+    build:
+      context: ./docker/app
+    image: isucon-app:golang
+    tty: true
+    depends_on:
+      - db
+    networks:
+      - backend
+    ports:
+      - "8000"
+    volumes:
+      - document_root:/home/isucon/isucon/webapp
+    environment:
+      MYSQL_DBNAME: isucon
+      MYSQL_HOST: db
+      MYSQL_PORT: 3306
+      MYSQL_USER: isucon
+      MYSQL_PASS: isucon
+
+  db:
+    build:
+      context: ./docker/db
+    image: isucon-db
+    networks:
+      - backend
+    ports:
+      - "3306"
+    command: ["--character-set-server=utf8mb4"]
+    environment:
+      MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
+      MYSQL_DATABASE: isucon
+      MYSQL_USER: isucon
+      MYSQL_PASSWORD: isucon
+      GOPATH: /home/isucon/isucon/webapp/go/
+
+networks:
+  frontend:
+  backend:
+
+volumes:
+  document_root:
+    driver_opts:
+      type: none
+      device: /YOUR_webapp_dir
+      o: bind
